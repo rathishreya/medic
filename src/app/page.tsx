@@ -1,10 +1,10 @@
 
 "use client"; // Required for useState, useEffect, and event handlers
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, MessageSquareText, CreditCard, MicVocal, Users, Heart, ClipboardList, ShieldCheck, type LucideIcon } from "lucide-react";
+import { CheckCircle, MessageSquareText, CreditCard, MicVocal, Users, Heart, ClipboardList, ShieldCheck, type LucideIcon, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import DepartmentCard from "@/components/landing/DepartmentCard";
@@ -12,6 +12,8 @@ import DoctorProfileCard from "@/components/landing/DoctorProfileCard";
 import TestimonialCard from "@/components/landing/TestimonialCard";
 import DoctorRecommendation from "@/components/landing/DoctorRecommendation";
 import TestimonialForm, { type TestimonialFormData } from "@/components/landing/TestimonialForm";
+import DoctorListModal from "@/components/landing/DoctorListModal";
+
 
 // Define types for shared data structures
 export interface Department {
@@ -23,8 +25,15 @@ export interface Department {
 }
 
 export interface Doctor {
+  id: string;
   name: string;
-  specialty: string;
+  specialty: string; // This should match a Department name
+  qualification: string;
+  consultationCharge: number;
+  reviews: {
+    averageRating: number; // e.g., 4.5
+    count: number; // e.g., 120
+  };
   bio: string;
   imageSrc: string;
   dataAiHint: string;
@@ -58,7 +67,7 @@ const initialDepartments: Department[] = [
   {
     name: "General Medicine",
     description: "Primary care services for adults, focusing on overall health, prevention, and management of common illnesses.",
-    Icon: ShieldCheck, // Changed to a more relevant icon
+    Icon: ShieldCheck,
     imageSrc: "https://placehold.co/600x338.png",
     dataAiHint: "general practice doctor",
   },
@@ -66,25 +75,59 @@ const initialDepartments: Department[] = [
 
 const initialDoctors: Doctor[] = [
   {
+    id: "doc1",
     name: "Dr. Emily Carter",
     specialty: "Cardiology",
+    qualification: "MD, FACC (Fellow of the American College of Cardiology)",
+    consultationCharge: 250,
+    reviews: { averageRating: 4.8, count: 150 },
     bio: "Dr. Carter is a board-certified cardiologist with over 10 years of experience in treating complex heart conditions and promoting cardiovascular wellness.",
     imageSrc: "https://placehold.co/200x200.png",
     dataAiHint: "female doctor portrait",
   },
   {
+    id: "doc2",
     name: "Dr. Johnathan Lee",
     specialty: "Gastroenterology",
+    qualification: "MD, AGAF (Fellow of the American Gastroenterological Association)",
+    consultationCharge: 220,
+    reviews: { averageRating: 4.7, count: 135 },
     bio: "Dr. Lee specializes in digestive health, offering advanced diagnostics and treatments for a wide range of gastrointestinal issues.",
     imageSrc: "https://placehold.co/200x200.png",
     dataAiHint: "male doctor portrait",
   },
   {
+    id: "doc3",
     name: "Dr. Sarah Green",
     specialty: "General Medicine",
+    qualification: "MD, MPH (Master of Public Health)",
+    consultationCharge: 180,
+    reviews: { averageRating: 4.9, count: 210 },
     bio: "Dr. Green provides comprehensive primary care, focusing on preventative health and patient education for long-term well-being.",
     imageSrc: "https://placehold.co/200x200.png",
     dataAiHint: "doctor portrait professional",
+  },
+  {
+    id: "doc4",
+    name: "Dr. Michael Brown",
+    specialty: "Cardiology",
+    qualification: "MBBS, MRCP (Member of the Royal College of Physicians)",
+    consultationCharge: 260,
+    reviews: { averageRating: 4.6, count: 95 },
+    bio: "Dr. Brown is known for his patient-centric approach and expertise in interventional cardiology.",
+    imageSrc: "https://placehold.co/200x200.png",
+    dataAiHint: "senior male doctor",
+  },
+  {
+    id: "doc5",
+    name: "Dr. Linda Smith",
+    specialty: "Gastroenterology",
+    qualification: "DO (Doctor of Osteopathic Medicine)",
+    consultationCharge: 230,
+    reviews: { averageRating: 4.5, count: 110 },
+    bio: "Dr. Smith is passionate about holistic digestive care and managing chronic conditions.",
+    imageSrc: "https://placehold.co/200x200.png",
+    dataAiHint: "female doctor smiling",
   },
 ];
 
@@ -118,6 +161,10 @@ export default function HomePage() {
   const [doctors] = useState<Doctor[]>(initialDoctors);
   const [testimonials, setTestimonials] = useState<Testimonial[]>(initialTestimonials);
 
+  const [isDoctorModalOpen, setIsDoctorModalOpen] = useState(false);
+  const [selectedDepartmentDoctors, setSelectedDepartmentDoctors] = useState<Doctor[]>([]);
+  const [selectedDepartmentName, setSelectedDepartmentName] = useState("");
+
   const handleNewTestimonial = (data: TestimonialFormData) => {
     const newTestimonial: Testimonial = {
       quote: data.quote,
@@ -130,6 +177,13 @@ export default function HomePage() {
   };
   
   const availableSpecialties = initialDepartments.map(dept => dept.name);
+
+  const handleDepartmentClick = (departmentName: string) => {
+    const filteredDoctors = doctors.filter(doc => doc.specialty === departmentName);
+    setSelectedDepartmentDoctors(filteredDoctors);
+    setSelectedDepartmentName(departmentName);
+    setIsDoctorModalOpen(true);
+  };
 
   return (
     <div className="space-y-20"> {/* Increased spacing between sections */}
@@ -205,14 +259,15 @@ export default function HomePage() {
           <h2 className="text-3xl md:text-4xl font-semibold text-center mb-12 text-primary">Our Medical Departments</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {departments.map((dept) => (
-              <DepartmentCard
-                key={dept.name}
-                name={dept.name}
-                description={dept.description}
-                Icon={dept.Icon}
-                imageSrc={dept.imageSrc}
-                dataAiHint={dept.dataAiHint}
-              />
+              <div key={dept.name} onClick={() => handleDepartmentClick(dept.name)} className="cursor-pointer group">
+                <DepartmentCard
+                  name={dept.name}
+                  description={dept.description}
+                  Icon={dept.Icon}
+                  imageSrc={dept.imageSrc}
+                  dataAiHint={dept.dataAiHint}
+                />
+              </div>
             ))}
           </div>
         </div>
@@ -224,7 +279,7 @@ export default function HomePage() {
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {doctors.map((doctor) => (
               <DoctorProfileCard
-                key={doctor.name}
+                key={doctor.id}
                 name={doctor.name}
                 specialty={doctor.specialty}
                 bio={doctor.bio}
@@ -265,6 +320,13 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Doctor List Modal - Rendered conditionally */}
+      <DoctorListModal
+        isOpen={isDoctorModalOpen}
+        onOpenChange={setIsDoctorModalOpen}
+        doctors={selectedDepartmentDoctors}
+        departmentName={selectedDepartmentName}
+      />
     </div>
   );
 }
@@ -307,3 +369,4 @@ function FeatureCard({ icon, title, description }: FeatureCardProps) {
     </Card>
   );
 }
+

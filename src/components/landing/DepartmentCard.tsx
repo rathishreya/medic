@@ -6,15 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 interface DepartmentCardProps {
   name: string;
   description: string;
-  Icon?: LucideIcon; // Optional: if you prefer an icon over an image
-  imageSrc?: string; // Optional: if you prefer an image
+  Icon?: LucideIcon;
+  imageSrc?: string;
   imageAlt?: string;
   dataAiHint?: string;
 }
 
 export default function DepartmentCard({ name, description, Icon, imageSrc, imageAlt = "Department image", dataAiHint }: DepartmentCardProps) {
   return (
-    <Card className="flex flex-col h-full shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <Card className="flex flex-col h-full shadow-lg group-hover:shadow-xl transition-shadow duration-300 group-hover:border-primary/50">
       <CardHeader className="pb-4">
         <div className="flex items-center gap-3 mb-3">
           {Icon && <Icon className="h-10 w-10 text-primary" />}

@@ -59,7 +59,7 @@ export default function PaymentForm() {
       setIsLoading(false);
       setPaymentSuccess(true);
       toast({
-        title: `Payment Successful via ${paymentMethod.toUpperCase()} (Simulated)`,
+        title: `Payment Successful via ${paymentMethod.toUpperCase()}`,
         description: `Your consultation fee of ₹${mockConsultationFeeINR} has been processed. You can now proceed.`,
         variant: "default",
         className: "bg-green-600 text-white dark:bg-green-700 dark:text-white"
@@ -86,7 +86,7 @@ export default function PaymentForm() {
           <CardDescription>Your payment via {paymentMethod.toUpperCase()} was successful. You can proceed with other consultation steps.</CardDescription>
         </CardHeader>
         <CardContent className="text-center">
-            <Button onClick={resetForm} variant="outline">Make Another Payment (Demo)</Button>
+            <Button onClick={resetForm} variant="outline">Make Another Payment</Button>
         </CardContent>
       </Card>
     );
@@ -126,7 +126,7 @@ export default function PaymentForm() {
                 <Label htmlFor="cardHolderName" className="flex items-center gap-1 text-base"><UserCircleIcon className="h-5 w-5 text-accent"/>Card Holder Name</Label>
                 <Input 
                   id="cardHolderName" 
-                  placeholder="e.g., Rohan Sharma" 
+                  placeholder="e.g., Priya Sharma" 
                   value={cardHolderName}
                   onChange={(e) => setCardHolderName(e.target.value)}
                   required={paymentMethod === "card"} 

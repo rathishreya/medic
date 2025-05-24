@@ -10,14 +10,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Send, User, MessageSquareText } from "lucide-react"; // Added User, MessageSquareText
+import { Send, User, MessageSquareText } from "lucide-react"; 
 
 export interface TestimonialFormData {
   author: string;
   quote: string;
-  role?: string; // Optional: role for the testimonial author
-  imageSrc?: string; // Optional: image for the testimonial author
-  dataAiHint?: string; // Optional: AI hint for image
+  role?: string; 
+  imageSrc?: string; 
+  dataAiHint?: string; 
 }
 
 interface TestimonialFormProps {
@@ -40,32 +40,35 @@ export default function TestimonialForm({ onSubmitTestimonial }: TestimonialForm
   });
 
   const handleSubmit: SubmitHandler<TestimonialFormData> = (data) => {
-    // Add some default/mock values for fields not in the form
     const newTestimonial: TestimonialFormData = {
       ...data,
-      role: "Verified User", // Default role
-      imageSrc: `https://source.unsplash.com/random/100x100/?${encodeURIComponent(data.dataAiHint || 'person+smiling')}`, // Default placeholder
+      role: "Verified User",
+      imageSrc: `https://source.unsplash.com/random/100x100/?${encodeURIComponent(data.dataAiHint || 'person+smiling')}`,
       dataAiHint: data.dataAiHint || "person smiling",
     };
     onSubmitTestimonial(newTestimonial);
     toast({
       title: "Testimonial Submitted!",
       description: "Thank you for your feedback.",
-      className: "bg-green-600 text-white dark:bg-green-700 dark:text-white",
+      variant: "success",
     });
     form.reset();
   };
 
   return (
-    <Card className="w-full shadow-xl border-border">
+    <Card className="w-full shadow-lg border-emerald-200 bg-gradient-to-b from-white to-emerald-50/50">
       <CardHeader>
         <div className="flex items-center gap-3">
-            <MessageSquareText className="h-10 w-10 text-primary" />
-            <CardTitle className="text-3xl text-primary">Share Your Experience</CardTitle>
+          <div className="p-3 bg-emerald-100 rounded-full">
+            <MessageSquareText className="h-8 w-8 text-emerald-600" />
+          </div>
+          <div>
+            <CardTitle className="text-3xl text-emerald-800">Share Your Experience</CardTitle>
+            <CardDescription className="text-emerald-700/80">
+              We'd love to hear your feedback! Submit your testimonial below.
+            </CardDescription>
+          </div>
         </div>
-        <CardDescription>
-          We'd love to hear your feedback! Submit your testimonial below.
-        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -75,11 +78,20 @@ export default function TestimonialForm({ onSubmitTestimonial }: TestimonialForm
               name="author"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center gap-2 text-base"><User className="h-5 w-5 text-accent"/>Your Name</FormLabel>
+                  <FormLabel className="flex items-center gap-2 text-base text-emerald-800">
+                    <div className="p-1 bg-emerald-100 rounded-full">
+                      <User className="h-4 w-4 text-emerald-600" />
+                    </div>
+                    Your Name
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Priya Sharma" {...field} className="text-base"/>
+                    <Input 
+                      placeholder="e.g., Priya Sharma" 
+                      {...field} 
+                      className="text-base border-emerald-300 focus:border-emerald-400 focus-visible:ring-emerald-200"
+                    />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-emerald-600" />
                 </FormItem>
               )}
             />
@@ -88,19 +100,29 @@ export default function TestimonialForm({ onSubmitTestimonial }: TestimonialForm
               name="quote"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center gap-2 text-base"><MessageSquareText className="h-5 w-5 text-accent"/>Your Testimonial</FormLabel>
+                  <FormLabel className="flex items-center gap-2 text-base text-emerald-800">
+                    <div className="p-1 bg-emerald-100 rounded-full">
+                      <MessageSquareText className="h-4 w-4 text-emerald-600" />
+                    </div>
+                    Your Testimonial
+                  </FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Tell us about your experience..."
-                      className="resize-none text-base min-h-[100px]"
+                      className="resize-none text-base min-h-[120px] border-emerald-300 focus:border-emerald-400 focus-visible:ring-emerald-200"
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-emerald-600" />
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full text-lg py-6" size="lg" disabled={form.formState.isSubmitting}>
+            <Button 
+              type="submit" 
+              className="w-full text-lg py-6 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-md transition-all duration-300 hover:shadow-lg"
+              size="lg" 
+              disabled={form.formState.isSubmitting}
+            >
               {form.formState.isSubmitting ? (
                 "Submitting..."
               ) : (
@@ -116,4 +138,3 @@ export default function TestimonialForm({ onSubmitTestimonial }: TestimonialForm
   );
 }
 
-    

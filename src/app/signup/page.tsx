@@ -105,24 +105,26 @@ export default function SignUpPage() {
       return;
     }
 
-    // Store user details for later
     setUserDetails(data);
     
+    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    setMockOtp(generatedOtp);
+    
     // Reset the OTP form to ensure it's clean *before* switching UI
-    otpForm.reset({ otp: "" }); 
+    otpForm.reset(); // This resets all fields in otpForm to their defaultValues (i.e., otp: "")
 
     setUiStep("otp"); // Switch to OTP entry step
 
-    // Simulate OTP generation and sending
-    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    setMockOtp(generatedOtp);
-
     // In a real app, you'd send an SMS here. For demo, we'll alert it.
-    alert(`Mock OTP Sent (for demo): ${generatedOtp}\nPlease enter this OTP to complete sign-up.`);
-    toast({
-      title: "OTP Sent (Simulated)",
-      description: `Enter the OTP: ${generatedOtp} (shown in alert).`,
-    });
+    // Use a timeout to ensure the UI step has changed before alerting,
+    // as alerts can sometimes block rendering updates.
+    setTimeout(() => {
+        alert(`Mock OTP Sent (for demo): ${generatedOtp}\nPlease enter this OTP to complete sign-up.`);
+        toast({
+        title: "OTP Sent (Simulated)",
+        description: `Enter the OTP: ${generatedOtp} (shown in alert).`,
+        });
+    }, 0);
   }
 
   function handleOtpSubmit(data: OtpFormValues) {
@@ -159,16 +161,27 @@ export default function SignUpPage() {
   }
 
   const handleResendOtp = () => {
-    if (!mockOtp) return;
+    if (!userDetails) { // Ensure userDetails are present before trying to resend
+        toast({
+            title: "Error",
+            description: "Please fill in your details first.",
+            variant: "destructive",
+        });
+        setUiStep("details"); // Go back to details if something is wrong
+        return;
+    }
     // Re-generate OTP or use the same one for simulation
     const newGeneratedOtp = Math.floor(100000 + Math.random() * 900000).toString();
     setMockOtp(newGeneratedOtp);
-    alert(`Mock OTP Resent (for demo): ${newGeneratedOtp}\nPlease enter this OTP to complete sign-up.`);
-    toast({
-      title: "OTP Resent (Simulated)",
-      description: `Enter the OTP: ${newGeneratedOtp} (shown in alert).`,
-    });
-    otpForm.reset({ otp: "" }); // Clear the OTP field on resend
+    otpForm.reset(); // Clear the OTP field on resend
+    // Use a timeout for the alert as well
+    setTimeout(() => {
+        alert(`Mock OTP Resent (for demo): ${newGeneratedOtp}\nPlease enter this OTP to complete sign-up.`);
+        toast({
+        title: "OTP Resent (Simulated)",
+        description: `Enter the OTP: ${newGeneratedOtp} (shown in alert).`,
+        });
+    }, 0);
   };
 
   if (!isClient) {
@@ -186,7 +199,7 @@ export default function SignUpPage() {
           <CardDescription>
             {uiStep === "details"
               ? "Join RemoteCare Connect today. All fields are required."
-              : "An OTP has been 'sent' to your registered phone number (shown in an alert)."}
+              : `An OTP has been 'sent' (simulated via alert for phone: ${userDetails?.phoneNumber || 'your phone'}).`}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -211,7 +224,7 @@ export default function SignUpPage() {
                   name="phoneNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="flex items-center gap-2 text-base"><Phone className="h-5 w-5 text-accent"/>Phone Number</FormLabel>
+                      <FormLabel className="flex items-center gap-2 text-base"><Phone className="h-5 w-5 text-accent"/>Phone Number (for mock OTP)</FormLabel>
                       <FormControl>
                         <Input type="tel" placeholder="e.g., 1234567890" {...field} className="text-base"/>
                       </FormControl>
@@ -271,43 +284,46 @@ export default function SignUpPage() {
                 </Button>
               </form>
             </Form>
-          ) : ( // OTP Step
-            <Form {...otpForm}>
-              <form onSubmit={otpForm.handleSubmit(handleOtpSubmit)} className="space-y-6">
-                <FormField
-                  control={otpForm.control}
-                  name="otp"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2 text-base"><KeyRound className="h-5 w-5 text-accent"/>Enter 6-Digit OTP</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="text" // Using text to allow any character, though number or tel could also be used
-                          placeholder="123456" 
-                          {...field} 
-                          className="text-base" 
-                          maxLength={6}
-                          autoComplete="one-time-code" // Helps browsers suggest OTPs
-                          inputMode="numeric" // Suggests numeric keyboard on mobile
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="flex flex-col sm:flex-row gap-2">
-                    <Button type="submit" className="flex-1 text-lg py-3" size="lg" disabled={otpForm.formState.isSubmitting}>
-                    {otpForm.formState.isSubmitting ? "Verifying..." : "Verify & Sign Up"}
-                    </Button>
-                    <Button type="button" variant="outline" onClick={() => setUiStep("details")} className="flex-1 text-lg py-3" size="lg">
-                        Back to Details
-                    </Button>
-                </div>
-                 <Button type="button" variant="link" onClick={handleResendOtp} className="w-full text-primary">
-                    Resend OTP (Simulated)
-                </Button>
-              </form>
-            </Form>
+          ) : ( 
+            // OTP Step: Use a key on a wrapping div to force re-mount
+            <div key="otp-form-wrapper">
+              <Form {...otpForm}>
+                <form onSubmit={otpForm.handleSubmit(handleOtpSubmit)} className="space-y-6">
+                  <FormField
+                    control={otpForm.control}
+                    name="otp"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2 text-base"><KeyRound className="h-5 w-5 text-accent"/>Enter 6-Digit OTP</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="text" 
+                            placeholder="123456" 
+                            {...field} 
+                            className="text-base" 
+                            maxLength={6}
+                            autoComplete="one-time-code" 
+                            inputMode="numeric" 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="flex flex-col sm:flex-row gap-2">
+                      <Button type="submit" className="flex-1 text-lg py-3" size="lg" disabled={otpForm.formState.isSubmitting}>
+                      {otpForm.formState.isSubmitting ? "Verifying..." : "Verify & Sign Up"}
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => setUiStep("details")} className="flex-1 text-lg py-3" size="lg">
+                          Back to Details
+                      </Button>
+                  </div>
+                  <Button type="button" variant="link" onClick={handleResendOtp} className="w-full text-primary">
+                      Resend OTP (Simulated)
+                  </Button>
+                </form>
+              </Form>
+            </div>
           )}
         </CardContent>
         <CardFooter className="justify-center">
@@ -322,4 +338,6 @@ export default function SignUpPage() {
     </div>
   );
 }
+    
+
     

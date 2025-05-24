@@ -7,26 +7,34 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { transcribeConsultation } from "@/ai/flows/transcribe-consultation";
+import { summarizeConsultation } from "@/ai/flows/summarize-consultation";
 import { Mic, StopCircle, FileText, Loader2, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function TranscriptionInterface() {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false); // For transcription
+  const [error, setError] = useState<string | null>(null); // For transcription error
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
 
+  const [summary, setSummary] = useState("");
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+
   const startRecording = async () => {
     setError(null);
     setTranscript("");
+    setSummary("");
+    setSummaryError(null);
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'audio/webm' }); // Specify MIME type
+        mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'audio/webm' });
         audioChunksRef.current = [];
 
         mediaRecorderRef.current.ondataavailable = (event) => {
@@ -40,7 +48,7 @@ export default function TranscriptionInterface() {
           if (audioChunksRef.current.length === 0) {
             setError("No audio data recorded. Please try speaking closer to the microphone.");
             setIsLoading(false);
-            setIsRecording(false); // Ensure state is reset
+            setIsRecording(false);
             toast({ title: "Recording Error", description: "No audio was captured.", variant: "destructive" });
             return;
           }
@@ -69,7 +77,6 @@ export default function TranscriptionInterface() {
           };
           reader.readAsDataURL(audioBlob);
           
-          // Clean up stream tracks
           stream.getTracks().forEach(track => track.stop());
         };
 
@@ -90,10 +97,26 @@ export default function TranscriptionInterface() {
   const stopRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
       mediaRecorderRef.current.stop();
-      // The transcription process is handled in mediaRecorderRef.current.onstop
     }
-    // Always set isRecording to false here, as onstop might not fire if recording never truly started
     setIsRecording(false); 
+  };
+
+  const handleSummarize = async () => {
+    if (!transcript || isSummarizing || isLoading) return; // also check isLoading for transcription
+    setIsSummarizing(true);
+    setSummaryError(null);
+    setSummary("");
+    try {
+      const result = await summarizeConsultation({ consultationText: transcript });
+      setSummary(result.summary);
+      toast({ title: "Summarization Complete", description: "Transcript successfully summarized.", className: "bg-green-600 text-white dark:bg-green-700 dark:text-white" });
+    } catch (err) {
+      console.error("Summarization error:", err);
+      setSummaryError("Failed to summarize transcript. Please try again.");
+      toast({ title: "Summarization Error", description: "Could not summarize the transcript.", variant: "destructive" });
+    } finally {
+      setIsSummarizing(false);
+    }
   };
 
   return (
@@ -110,24 +133,26 @@ export default function TranscriptionInterface() {
         {error && (
           <Alert variant="destructive" className="mb-4">
             <AlertTriangle className="h-5 w-5" />
-            <AlertTitle>Error Occurred</AlertTitle>
+            <AlertTitle>Transcription Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
         <div className="flex flex-col sm:flex-row gap-4 items-center">
           {!isRecording ? (
-            <Button onClick={startRecording} disabled={isLoading} className="w-full sm:flex-1 text-base py-3">
+            <Button onClick={startRecording} disabled={isLoading || isSummarizing} className="w-full sm:flex-1 text-base py-3">
               <Mic className="mr-2 h-5 w-5" /> Start Recording
             </Button>
           ) : (
-            <Button onClick={stopRecording} variant="destructive" disabled={isLoading} className="w-full sm:flex-1 text-base py-3">
+            <Button onClick={stopRecording} variant="destructive" disabled={isLoading || isSummarizing} className="w-full sm:flex-1 text-base py-3">
               <StopCircle className="mr-2 h-5 w-5" /> Stop Recording & Transcribe
             </Button>
           )}
-          {isLoading && (
+          {(isLoading || isSummarizing) && (
             <div className="flex items-center gap-2 text-muted-foreground pt-2 sm:pt-0">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                <span className="text-base">Processing audio... Please wait.</span>
+                <span className="text-base">
+                  {isLoading ? "Processing audio..." : isSummarizing ? "Summarizing transcript..." : "Processing..."} Please wait.
+                </span>
             </div>
           )}
         </div>
@@ -142,10 +167,45 @@ export default function TranscriptionInterface() {
               className="bg-background/50 shadow-inner text-base p-4 rounded-md leading-relaxed"
             />
         </div>
+
+        {transcript && !isLoading && (
+          <div className="pt-2 space-y-4">
+            <Button 
+              onClick={handleSummarize} 
+              disabled={isSummarizing || !transcript || isLoading}
+              className="w-full sm:w-auto text-base py-3"
+            >
+              {isSummarizing ? (
+                <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Summarizing...</>
+              ) : (
+                <><FileText className="mr-2 h-5 w-5" /> Summarize Transcript</>
+              )}
+            </Button>
+
+            {summaryError && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-5 w-5" />
+                <AlertTitle>Summarization Error</AlertTitle>
+                <AlertDescription>{summaryError}</AlertDescription>
+              </Alert>
+            )}
+
+            {summary && (
+              <div className="pt-2">
+                <Label htmlFor="summary" className="text-lg mb-2 block font-medium">Summary:</Label>
+                <ScrollArea className="h-[200px] w-full rounded-md border p-4 bg-background/50 shadow-inner">
+                  <pre id="summary" className="text-sm whitespace-pre-wrap break-words">
+                    {summary}
+                  </pre>
+                </ScrollArea>
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
       <CardFooter>
         <p className="text-xs text-muted-foreground">
-            Note: For best results, ensure a quiet environment and speak clearly into your microphone. Transcription accuracy may vary.
+            Note: For best results, ensure a quiet environment and speak clearly into your microphone. Transcription and summarization accuracy may vary.
         </p>
       </CardFooter>
     </Card>

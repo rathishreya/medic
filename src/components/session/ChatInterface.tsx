@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, UserCircle, Stethoscope } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { chatWithDoctor } from "@/ai/flows/chat-doctor-flow";
 
 interface Message {
   id: string;
@@ -18,52 +19,71 @@ interface Message {
 
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([
-    { id: "1", text: "Hello! I'm Dr. Smith. How can I help you today?", sender: "doctor", timestamp: new Date(Date.now() - 60000 * 5) },
+    { id: "1", text: "Hello! I'm Dr. GenAI. How can I help you today? Remember, I'm an AI assistant and cannot provide real medical diagnoses.", sender: "doctor", timestamp: new Date(Date.now() - 60000 * 5) },
     { id: "2", text: "Hi Doctor, I've been experiencing a persistent cough and some fatigue for the past week.", sender: "patient", timestamp: new Date(Date.now() - 60000 * 4) },
-    { id: "3", text: "I see. Can you tell me more about the cough? Is it dry or productive? Any fever?", sender: "doctor", timestamp: new Date(Date.now() - 60000 * 3) },
   ]);
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  const handleSendMessage = (e: FormEvent) => {
+  const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
     if (newMessage.trim() === "" || isSending) return;
 
     setIsSending(true);
+    const patientMessageContent = newMessage;
     const patientMessage: Message = {
       id: String(Date.now()),
-      text: newMessage,
+      text: patientMessageContent,
       sender: "patient",
       timestamp: new Date(),
     };
-    setMessages((prevMessages) => [...prevMessages, patientMessage]);
+    
+    const updatedMessages = [...messages, patientMessage];
+    setMessages(updatedMessages);
     setNewMessage("");
 
-    // Simulate doctor's reply
-    setTimeout(() => {
-      const doctorReplies = [
-        "Understood. And how severe is the fatigue?",
-        "Have you taken any medication for these symptoms?",
-        "Are there any other symptoms I should be aware of, like a sore throat or body aches?",
-        "Okay, please describe the cough in more detail.",
-      ];
-      const randomReply = doctorReplies[Math.floor(Math.random() * doctorReplies.length)];
-      
-      const doctorReplyMessage: Message = {
+    const historyForAIInput = messages.map(msg => ({ sender: msg.sender, text: msg.text }));
+
+    try {
+      const aiResponse = await chatWithDoctor({
+        patientMessage: patientMessageContent,
+        chatHistory: historyForAIInput,
+      });
+
+      if (aiResponse && aiResponse.doctorResponse) {
+        const doctorReplyMessage: Message = {
+          id: String(Date.now() + 1),
+          text: aiResponse.doctorResponse,
+          sender: "doctor",
+          timestamp: new Date(),
+        };
+        setMessages((prevMessages) => [...prevMessages, doctorReplyMessage]);
+      } else {
+        const fallbackDoctorReply: Message = {
+          id: String(Date.now() + 1),
+          text: "I'm sorry, I couldn't process that. Please try again.",
+          sender: "doctor",
+          timestamp: new Date(),
+        };
+        setMessages((prevMessages) => [...prevMessages, fallbackDoctorReply]);
+      }
+    } catch (error) {
+      console.error("Error calling chatWithDoctor flow:", error);
+      const errorDoctorReply: Message = {
         id: String(Date.now() + 1),
-        text: randomReply,
+        text: "Apologies, I'm experiencing a technical difficulty. Please try again later.",
         sender: "doctor",
         timestamp: new Date(),
       };
-      setMessages((prevMessages) => [...prevMessages, doctorReplyMessage]);
+      setMessages((prevMessages) => [...prevMessages, errorDoctorReply]);
+    } finally {
       setIsSending(false);
-    }, 1500 + Math.random() * 1000);
+    }
   };
 
   useEffect(() => {
     if (scrollAreaRef.current) {
-      // The direct child of ScrollArea is the Viewport
       const viewport = scrollAreaRef.current.children[0] as HTMLElement;
       if (viewport) {
         viewport.scrollTop = viewport.scrollHeight;
@@ -76,9 +96,9 @@ export default function ChatInterface() {
     <Card className="w-full max-w-2xl mx-auto shadow-lg border-border">
       <CardHeader>
         <CardTitle className="text-2xl flex items-center gap-2 text-primary">
-            <Stethoscope className="h-7 w-7" /> Chat with Dr. Smith
+            <Stethoscope className="h-7 w-7" /> Chat with Dr. GenAI
         </CardTitle>
-        <CardDescription>Communicate securely and effectively with your healthcare provider.</CardDescription>
+        <CardDescription>Communicate securely and effectively with your AI healthcare assistant.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col h-[calc(100vh-380px)] min-h-[400px] max-h-[600px]">
         <ScrollArea className="flex-grow p-4 border rounded-md mb-4 bg-background/50 shadow-inner" ref={scrollAreaRef}>
@@ -92,7 +112,7 @@ export default function ChatInterface() {
               >
                 {msg.sender === "doctor" && (
                   <Avatar className="h-9 w-9 border-2 border-accent">
-                    <AvatarImage src="https://placehold.co/40x40.png?text=Dr" data-ai-hint="doctor portrait" />
+                    <AvatarImage src="https://placehold.co/40x40.png?text=AI" data-ai-hint="robot doctor" />
                     <AvatarFallback><Stethoscope size={18}/></AvatarFallback>
                   </Avatar>
                 )}

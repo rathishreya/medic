@@ -13,6 +13,10 @@ import Image from "next/image";
 
 type PaymentMethod = "card" | "upi";
 
+// Define a type for SVG props if not already available globally
+interface UserCircleIconProps extends React.SVGProps<SVGSVGElement> {}
+
+
 export default function PaymentForm() {
   const { toast } = useToast();
   const [cardNumber, setCardNumber] = useState("");
@@ -23,6 +27,7 @@ export default function PaymentForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
+  const mockConsultationFeeINR = 2000; // Example fee in INR
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,8 +59,8 @@ export default function PaymentForm() {
       setIsLoading(false);
       setPaymentSuccess(true);
       toast({
-        title: `Payment Successful via ${paymentMethod.toUpperCase()} (Mock)`,
-        description: "Your consultation fee has been processed. You can now proceed.",
+        title: `Payment Successful via ${paymentMethod.toUpperCase()} (Simulated)`,
+        description: `Your consultation fee of ₹${mockConsultationFeeINR} has been processed. You can now proceed.`,
         variant: "default",
         className: "bg-green-600 text-white dark:bg-green-700 dark:text-white"
       });
@@ -93,7 +98,7 @@ export default function PaymentForm() {
         <CardTitle className="text-2xl flex items-center gap-2 text-primary">
           <CreditCard className="h-7 w-7"/> Secure Payment
         </CardTitle>
-        <CardDescription>Select your payment method. (This is a mock form for demonstration purposes)</CardDescription>
+        <CardDescription>Select your payment method. (This is a simulated form for demonstration purposes)</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-6">
@@ -121,7 +126,7 @@ export default function PaymentForm() {
                 <Label htmlFor="cardHolderName" className="flex items-center gap-1 text-base"><UserCircleIcon className="h-5 w-5 text-accent"/>Card Holder Name</Label>
                 <Input 
                   id="cardHolderName" 
-                  placeholder="John Doe" 
+                  placeholder="e.g., Rohan Sharma" 
                   value={cardHolderName}
                   onChange={(e) => setCardHolderName(e.target.value)}
                   required={paymentMethod === "card"} 
@@ -199,7 +204,7 @@ export default function PaymentForm() {
         </CardContent>
         <CardFooter>
           <Button type="submit" className="w-full text-lg py-3" disabled={isLoading}>
-            {isLoading ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...</> : `Pay Consultation Fee ($50) via ${paymentMethod.toUpperCase()}`}
+            {isLoading ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...</> : `Pay Consultation Fee (₹${mockConsultationFeeINR}) via ${paymentMethod.toUpperCase()}`}
           </Button>
         </CardFooter>
       </form>
@@ -208,7 +213,7 @@ export default function PaymentForm() {
 }
 
 // Keeping UserCircleIcon as it's used for card holder name
-function UserCircleIcon(props: React.SVGProps<SVGSVGElement>) {
+function UserCircleIcon(props: UserCircleIconProps) { // Use the defined type here
   return (
     <svg
       {...props}
@@ -228,5 +233,3 @@ function UserCircleIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   )
 }
-
-    

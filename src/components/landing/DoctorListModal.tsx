@@ -29,17 +29,17 @@ export default function DoctorListModal({
   departmentName,
 }: DoctorListModalProps) {
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
   };
 
   const renderStars = (rating: number) => {
     const fullStars = Math.floor(rating);
-    const halfStar = rating % 1 !== 0;
+    const halfStar = rating % 1 !== 0; // This can be used if half star icons are available
     const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
     return (
       <div className="flex items-center">
         {Array(fullStars).fill(0).map((_, i) => <Star key={`full-${i}`} className="h-4 w-4 text-yellow-400 fill-yellow-400" />)}
-        {/* Basic implementation doesn't include half star for now, could be added */}
+        {/* Add half star rendering logic here if desired */}
         {Array(emptyStars).fill(0).map((_, i) => <Star key={`empty-${i}`} className="h-4 w-4 text-yellow-400" />)}
       </div>
     );

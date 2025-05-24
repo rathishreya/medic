@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { User, CalendarDays, Pill, FileSignature, Save, FileText } from 'lucide-react';
+import { User, CalendarDays, Pill, FileSignature, Save, FileText, Mail } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface PrescriptionPadProps {
@@ -18,6 +18,23 @@ interface PrescriptionPadProps {
   clinicAddress: string;
 }
 
+export interface StoredPrescription {
+  id: string;
+  doctorName: string;
+  doctorContact: string;
+  clinicName: string;
+  clinicAddress: string;
+  patientName: string;
+  patientEmail: string; // Used to key prescriptions for patient
+  prescriptionDate: string;
+  medication: string;
+  dosage: string;
+  instructions: string;
+  issuedDate: string; // ISO string of when it was saved
+}
+
+const LOCAL_STORAGE_PRESCRIPTIONS_KEY_PREFIX = "telehealthAppPrescriptions_";
+
 export default function PrescriptionPad({
   doctorName,
   doctorContact,
@@ -25,43 +42,76 @@ export default function PrescriptionPad({
   clinicAddress
 }: PrescriptionPadProps) {
   const [patientName, setPatientName] = useState('');
+  const [patientEmail, setPatientEmail] = useState('');
   const [prescriptionDate, setPrescriptionDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [medication, setMedication] = useState('');
   const [dosage, setDosage] = useState('');
   const [instructions, setInstructions] = useState('');
   const { toast } = useToast();
 
-  const handleSavePrescription = (e: React.FormEvent) => {
+  const handleSaveAndSendPrescription = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!patientName || !medication || !dosage || !instructions) {
+    if (!patientName || !patientEmail || !medication || !dosage) { // Instructions are optional
         toast({
             title: "Missing Information",
-            description: "Please fill all fields before saving the prescription.",
+            description: "Please fill all required fields (Patient Name, Email, Medication, Dosage) before saving.",
+            variant: "destructive",
+        });
+        return;
+    }
+    if (!patientEmail.match(/^[\w.-]+@[\w.-]+\.\w{2,}$/)) {
+        toast({
+            title: "Invalid Patient Email",
+            description: "Please enter a valid email address for the patient.",
             variant: "destructive",
         });
         return;
     }
 
-    // Simulate save action
-    console.log({
+    const newPrescription: StoredPrescription = {
+      id: Date.now().toString(),
       doctorName,
+      doctorContact,
+      clinicName,
+      clinicAddress,
       patientName,
+      patientEmail: patientEmail.toLowerCase(),
       prescriptionDate,
       medication,
       dosage,
       instructions,
-    });
-    toast({
-      title: "Prescription Saved",
-      description: `Prescription for ${patientName} has been saved.`,
-      variant: "default",
-      className: "bg-green-600 text-white dark:bg-green-700 dark:text-white"
-    });
-    // Optionally clear fields after saving
-    // setPatientName('');
-    // setMedication('');
-    // setDosage('');
-    // setInstructions('');
+      issuedDate: new Date().toISOString(),
+    };
+
+    try {
+      const storageKey = LOCAL_STORAGE_PRESCRIPTIONS_KEY_PREFIX + newPrescription.patientEmail;
+      const existingPrescriptionsStr = localStorage.getItem(storageKey);
+      const existingPrescriptions: StoredPrescription[] = existingPrescriptionsStr ? JSON.parse(existingPrescriptionsStr) : [];
+      
+      existingPrescriptions.push(newPrescription);
+      localStorage.setItem(storageKey, JSON.stringify(existingPrescriptions));
+
+      toast({
+        title: "Prescription Saved & Sent",
+        description: `Prescription for ${patientName} has been saved and is (simulated) sent to ${patientEmail}.`,
+        variant: "default",
+        className: "bg-green-600 text-white dark:bg-green-700 dark:text-white"
+      });
+
+      // Optionally clear fields after saving
+      // setPatientName('');
+      // setPatientEmail('');
+      // setMedication('');
+      // setDosage('');
+      // setInstructions('');
+    } catch (error) {
+      console.error("Error saving prescription to localStorage:", error);
+      toast({
+        title: "Storage Error",
+        description: "Could not save the prescription due to a storage issue.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -73,7 +123,7 @@ export default function PrescriptionPad({
           <p className="text-sm text-muted-foreground">{doctorName} | {doctorContact}</p>
         </div>
       </CardHeader>
-      <form onSubmit={handleSavePrescription}>
+      <form onSubmit={handleSaveAndSendPrescription}>
         <CardContent className="p-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -87,8 +137,21 @@ export default function PrescriptionPad({
                 className="text-base"
               />
             </div>
-            <div>
-              <Label htmlFor="prescriptionDate" className="flex items-center gap-2 text-base mb-1"><CalendarDays className="h-4 w-4 text-accent" />Date</Label>
+             <div>
+              <Label htmlFor="patientEmail" className="flex items-center gap-2 text-base mb-1"><Mail className="h-4 w-4 text-accent" />Patient Email</Label>
+              <Input
+                id="patientEmail"
+                type="email"
+                value={patientEmail}
+                onChange={(e) => setPatientEmail(e.target.value)}
+                placeholder="patient@example.com"
+                required
+                className="text-base"
+              />
+            </div>
+          </div>
+           <div>
+              <Label htmlFor="prescriptionDate" className="flex items-center gap-2 text-base mb-1"><CalendarDays className="h-4 w-4 text-accent" />Prescription Date</Label>
               <Input
                 id="prescriptionDate"
                 type="date"
@@ -98,10 +161,9 @@ export default function PrescriptionPad({
                 className="text-base"
               />
             </div>
-          </div>
 
           <div>
-            <Label htmlFor="medication" className="flex items-center gap-2 text-base mb-1"><Pill className="h-4 w-4 text-accent" />Medication</Label>
+            <Label htmlFor="medication" className="flex items-center gap-2 text-base mb-1"><Pill className="h-4 w-4 text-accent" />Medication(s)</Label>
             <Textarea
               id="medication"
               value={medication}
@@ -131,9 +193,9 @@ export default function PrescriptionPad({
               id="instructions"
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
-              placeholder="e.g., Take after meals. Drink plenty of water."
+              placeholder="e.g., Take after meals. Drink plenty of water. Complete the full course."
               rows={3}
-              className="text-base" // Instructions are not strictly required, so removed 'required'
+              className="text-base"
             />
           </div>
         </CardContent>
@@ -143,7 +205,7 @@ export default function PrescriptionPad({
             <p className="font-serif text-lg text-primary italic">{doctorName}</p>
           </div>
           <Button type="submit" size="lg" className="text-base">
-            <Save className="mr-2 h-5 w-5" /> Save Prescription
+            <Save className="mr-2 h-5 w-5" /> Save & Send Prescription
           </Button>
         </CardFooter>
       </form>

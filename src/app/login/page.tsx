@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Lock, LogInIcon, UserCircle, Briefcase } from "lucide-react"; // Changed LogIn to LogInIcon
+import { Mail, Lock, LogInIcon, Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 
@@ -33,7 +33,7 @@ const LOCAL_STORAGE_CURRENT_USER_KEY = "telehealthAppCurrentUser";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
-  password: z.string().min(1, { message: "Password is required." }), // Min 1 for login
+  password: z.string().min(1, { message: "Password is required." }),
   role: z.enum(["patient", "doctor"], { required_error: "Please select a role." }),
 });
 
@@ -58,14 +58,13 @@ export default function LoginPage() {
 
   useEffect(() => {
     setIsClient(true);
-    // Check if user is already logged in and if their role matches potential dashboard
     const userStr = localStorage.getItem(LOCAL_STORAGE_CURRENT_USER_KEY);
     if (userStr) {
       const user: CurrentUser = JSON.parse(userStr);
       if (user.role === 'doctor') {
         router.push("/doctor/dashboard");
       } else {
-        router.push("/"); 
+        router.push("/patient/dashboard"); 
       }
     }
   }, [router]);
@@ -87,7 +86,7 @@ export default function LoginPage() {
 
     const foundUser = users.find(
       user => user.email.toLowerCase() === data.email.toLowerCase() && 
-              user.passwordHash === data.password && // In real app, compare HASHED passwords
+              user.passwordHash === data.password && 
               user.role === data.role
     );
 
@@ -106,9 +105,8 @@ export default function LoginPage() {
       if (foundUser.role === 'doctor') {
         router.push("/doctor/dashboard");
       } else {
-        router.push("/"); 
+        router.push("/patient/dashboard"); 
       }
-      // router.refresh(); // Force refresh to re-evaluate layout/header if needed
     } else {
       toast({
         title: "Login Failed",
@@ -120,14 +118,10 @@ export default function LoginPage() {
   }
 
   if (!isClient) {
-    // Prevent rendering form until client-side check is complete to avoid flash of content
-    // Or a loading spinner
     return <div className="flex justify-center items-center min-h-[calc(100vh-200px)]"><p>Loading...</p></div>;
   }
   
-  // If user is already logged in (checked in useEffect), they will be redirected.
-  // This check prevents rendering the form if redirection is about to happen.
-  if (localStorage.getItem(LOCAL_STORAGE_CURRENT_USER_KEY)) {
+  if (isClient && localStorage.getItem(LOCAL_STORAGE_CURRENT_USER_KEY)) {
       return <div className="flex justify-center items-center min-h-[calc(100vh-200px)]"><p>Redirecting...</p></div>;
   }
 

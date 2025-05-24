@@ -8,16 +8,19 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { transcribeConsultation } from "@/ai/flows/transcribe-consultation";
 import { summarizeConsultation } from "@/ai/flows/summarize-consultation";
-import { Mic, StopCircle, FileText, Loader2, AlertTriangle } from "lucide-react";
+import { generateFollowUpSuggestions, type GenerateFollowUpSuggestionsOutput } from "@/ai/flows/generate-follow-up-suggestions";
+import { Mic, StopCircle, FileText, Loader2, AlertTriangle, Sparkles } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+
 
 export default function TranscriptionInterface() {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // For transcription
-  const [error, setError] = useState<string | null>(null); // For transcription error
+  const [isLoadingTranscript, setIsLoadingTranscript] = useState(false);
+  const [transcriptError, setTranscriptError] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
@@ -26,11 +29,18 @@ export default function TranscriptionInterface() {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
 
+  const [followUpSuggestions, setFollowUpSuggestions] = useState<GenerateFollowUpSuggestionsOutput['suggestions']>([]);
+  const [isGeneratingSuggestions, setIsGeneratingSuggestions] = useState(false);
+  const [suggestionsError, setSuggestionsError] = useState<string | null>(null);
+
   const startRecording = async () => {
-    setError(null);
+    setTranscriptError(null);
     setTranscript("");
     setSummary("");
     setSummaryError(null);
+    setFollowUpSuggestions([]);
+    setSuggestionsError(null);
+
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -44,10 +54,10 @@ export default function TranscriptionInterface() {
         };
 
         mediaRecorderRef.current.onstop = async () => {
-          setIsLoading(true);
+          setIsLoadingTranscript(true);
           if (audioChunksRef.current.length === 0) {
-            setError("No audio data recorded. Please try speaking closer to the microphone.");
-            setIsLoading(false);
+            setTranscriptError("No audio data recorded. Please try speaking closer to the microphone.");
+            setIsLoadingTranscript(false);
             setIsRecording(false);
             toast({ title: "Recording Error", description: "No audio was captured.", variant: "destructive" });
             return;
@@ -64,15 +74,15 @@ export default function TranscriptionInterface() {
               toast({ title: "Transcription Complete", description: "Audio successfully transcribed.", className: "bg-green-600 text-white dark:bg-green-700 dark:text-white"});
             } catch (err) {
               console.error("Transcription error:", err);
-              setError("Failed to transcribe audio. The AI service might be unavailable or the audio format is not supported. Please try again.");
+              setTranscriptError("Failed to transcribe audio. The AI service might be unavailable or the audio format is not supported. Please try again.");
               toast({ title: "Transcription Error", description: "Could not transcribe the audio.", variant: "destructive" });
             } finally {
-              setIsLoading(false);
+              setIsLoadingTranscript(false);
             }
           };
           reader.onerror = () => {
-            setError("Failed to read audio data.");
-            setIsLoading(false);
+            setTranscriptError("Failed to read audio data.");
+            setIsLoadingTranscript(false);
             toast({ title: "File Read Error", description: "Could not process the recorded audio.", variant: "destructive" });
           };
           reader.readAsDataURL(audioBlob);
@@ -85,11 +95,11 @@ export default function TranscriptionInterface() {
         toast({ title: "Recording Started", description: "Microphone is now active. Speak clearly." });
       } catch (err) {
         console.error("Error accessing microphone:", err);
-        setError("Could not access microphone. Please ensure it's enabled in your browser settings and not in use by another application.");
+        setTranscriptError("Could not access microphone. Please ensure it's enabled in your browser settings and not in use by another application.");
         toast({ title: "Microphone Access Error", description: "Failed to access microphone. Check permissions.", variant: "destructive" });
       }
     } else {
-      setError("Audio recording is not supported by your browser. Please use a modern browser like Chrome or Firefox.");
+      setTranscriptError("Audio recording is not supported by your browser. Please use a modern browser like Chrome or Firefox.");
       toast({ title: "Unsupported Browser", description: "Audio recording not supported.", variant: "destructive" });
     }
   };
@@ -102,10 +112,12 @@ export default function TranscriptionInterface() {
   };
 
   const handleSummarize = async () => {
-    if (!transcript || isSummarizing || isLoading) return; // also check isLoading for transcription
+    if (!transcript || isSummarizing || isLoadingTranscript) return;
     setIsSummarizing(true);
     setSummaryError(null);
     setSummary("");
+    setFollowUpSuggestions([]); // Clear previous suggestions
+    setSuggestionsError(null);
     try {
       const result = await summarizeConsultation({ consultationText: transcript });
       setSummary(result.summary);
@@ -119,39 +131,59 @@ export default function TranscriptionInterface() {
     }
   };
 
+  const handleGenerateSuggestions = async () => {
+    if (!summary || isGeneratingSuggestions || isSummarizing || isLoadingTranscript) return;
+    setIsGeneratingSuggestions(true);
+    setSuggestionsError(null);
+    setFollowUpSuggestions([]);
+    try {
+      const result = await generateFollowUpSuggestions({ consultationSummary: summary });
+      setFollowUpSuggestions(result.suggestions);
+      toast({ title: "Suggestions Generated", description: "Follow-up suggestions are ready.", className: "bg-green-600 text-white dark:bg-green-700 dark:text-white" });
+    } catch (err) {
+      console.error("Suggestion generation error:", err);
+      setSuggestionsError("Failed to generate follow-up suggestions. Please try again.");
+      toast({ title: "Suggestion Error", description: "Could not generate suggestions.", variant: "destructive" });
+    } finally {
+      setIsGeneratingSuggestions(false);
+    }
+  };
+
+  const anyLoading = isLoadingTranscript || isSummarizing || isGeneratingSuggestions;
+
   return (
     <Card className="w-full max-w-2xl mx-auto shadow-lg border-border">
       <CardHeader>
         <CardTitle className="text-2xl flex items-center gap-2 text-primary">
-            <FileText className="h-7 w-7"/> Consultation Transcript
+            <FileText className="h-7 w-7"/> Consultation Transcript & AI Insights
         </CardTitle>
         <CardDescription>
-          Record your consultation for an AI-powered transcription. This can help with understanding and record-keeping.
+          Record, transcribe, summarize, and get AI-powered follow-up suggestions for your consultation.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {error && (
+        {transcriptError && (
           <Alert variant="destructive" className="mb-4">
             <AlertTriangle className="h-5 w-5" />
             <AlertTitle>Transcription Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>{transcriptError}</AlertDescription>
           </Alert>
         )}
         <div className="flex flex-col sm:flex-row gap-4 items-center">
           {!isRecording ? (
-            <Button onClick={startRecording} disabled={isLoading || isSummarizing} className="w-full sm:flex-1 text-base py-3">
+            <Button onClick={startRecording} disabled={anyLoading} className="w-full sm:flex-1 text-base py-3">
               <Mic className="mr-2 h-5 w-5" /> Start Recording
             </Button>
           ) : (
-            <Button onClick={stopRecording} variant="destructive" disabled={isLoading || isSummarizing} className="w-full sm:flex-1 text-base py-3">
+            <Button onClick={stopRecording} variant="destructive" disabled={isLoadingTranscript} className="w-full sm:flex-1 text-base py-3">
               <StopCircle className="mr-2 h-5 w-5" /> Stop Recording & Transcribe
             </Button>
           )}
-          {(isLoading || isSummarizing) && (
+          {(isLoadingTranscript || isSummarizing || isGeneratingSuggestions) && (
             <div className="flex items-center gap-2 text-muted-foreground pt-2 sm:pt-0">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 <span className="text-base">
-                  {isLoading ? "Processing audio..." : isSummarizing ? "Summarizing transcript..." : "Processing..."} Please wait.
+                  {isLoadingTranscript ? "Transcribing..." : isSummarizing ? "Summarizing..." : isGeneratingSuggestions ? "Generating suggestions..." : "Processing..."}
                 </span>
             </div>
           )}
@@ -160,19 +192,19 @@ export default function TranscriptionInterface() {
             <Label htmlFor="transcript" className="text-lg mb-2 block font-medium">Transcript:</Label>
             <Textarea
               id="transcript"
-              placeholder={isRecording ? "Recording in progress... Stop recording to see transcript." : isLoading ? "Transcription in progress..." : "Your transcript will appear here after recording and processing."}
+              placeholder={isRecording ? "Recording in progress... Stop recording to see transcript." : isLoadingTranscript ? "Transcription in progress..." : "Your transcript will appear here after recording and processing."}
               value={transcript}
               readOnly
-              rows={12}
+              rows={10}
               className="bg-background/50 shadow-inner text-base p-4 rounded-md leading-relaxed"
             />
         </div>
 
-        {transcript && !isLoading && (
+        {transcript && !isLoadingTranscript && (
           <div className="pt-2 space-y-4">
             <Button 
               onClick={handleSummarize} 
-              disabled={isSummarizing || !transcript || isLoading}
+              disabled={isSummarizing || !transcript || isLoadingTranscript || isGeneratingSuggestions}
               className="w-full sm:w-auto text-base py-3"
             >
               {isSummarizing ? (
@@ -190,14 +222,56 @@ export default function TranscriptionInterface() {
               </Alert>
             )}
 
-            {summary && (
+            {summary && !isSummarizing && (
               <div className="pt-2">
                 <Label htmlFor="summary" className="text-lg mb-2 block font-medium">Summary:</Label>
-                <ScrollArea className="h-[200px] w-full rounded-md border p-4 bg-background/50 shadow-inner">
+                <ScrollArea className="h-[150px] w-full rounded-md border p-4 bg-background/50 shadow-inner">
                   <pre id="summary" className="text-sm whitespace-pre-wrap break-words">
                     {summary}
                   </pre>
                 </ScrollArea>
+                
+                <Button 
+                  onClick={handleGenerateSuggestions} 
+                  disabled={isGeneratingSuggestions || !summary || isSummarizing || isLoadingTranscript}
+                  className="w-full sm:w-auto text-base py-3 mt-4"
+                >
+                  {isGeneratingSuggestions ? (
+                    <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Generating Suggestions...</>
+                  ) : (
+                    <><Sparkles className="mr-2 h-5 w-5" /> Get AI Follow-up Suggestions</>
+                  )}
+                </Button>
+              </div>
+            )}
+
+            {suggestionsError && (
+              <Alert variant="destructive" className="mt-4">
+                <AlertTriangle className="h-5 w-5" />
+                <AlertTitle>Suggestion Generation Error</AlertTitle>
+                <AlertDescription>{suggestionsError}</AlertDescription>
+              </Alert>
+            )}
+
+            {followUpSuggestions.length > 0 && !isGeneratingSuggestions && (
+              <div className="pt-4">
+                <h3 className="text-lg mb-2 block font-medium">AI Follow-up Suggestions:</h3>
+                 <Accordion type="single" collapsible className="w-full">
+                  {followUpSuggestions.map((suggestion, index) => (
+                    <AccordionItem value={`item-${index}`} key={index}>
+                      <AccordionTrigger className="text-base hover:no-underline">
+                        <div className="flex items-center gap-2">
+                           <Sparkles className="h-4 w-4 text-accent" /> 
+                           {suggestion.title}
+                        </div>
+                       
+                        </AccordionTrigger>
+                      <AccordionContent className="text-sm text-muted-foreground pl-4 pb-3">
+                        {suggestion.detail}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
               </div>
             )}
           </div>
@@ -205,7 +279,7 @@ export default function TranscriptionInterface() {
       </CardContent>
       <CardFooter>
         <p className="text-xs text-muted-foreground">
-            Note: For best results, ensure a quiet environment and speak clearly into your microphone. Transcription and summarization accuracy may vary.
+            Note: For best results, ensure a quiet environment and speak clearly into your microphone. AI features provide general information and are not a substitute for professional medical advice.
         </p>
       </CardFooter>
     </Card>

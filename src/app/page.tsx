@@ -1,39 +1,70 @@
 
+"use client"; // Required for useState, useEffect, and event handlers
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, MessageSquareText, CreditCard, MicVocal, Users, Heart, ClipboardList, ShieldCheck } from "lucide-react"; // Added Users, Heart, ClipboardList, ShieldCheck
+import { CheckCircle, MessageSquareText, CreditCard, MicVocal, Users, Heart, ClipboardList, ShieldCheck, type LucideIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import DepartmentCard from "@/components/landing/DepartmentCard";
 import DoctorProfileCard from "@/components/landing/DoctorProfileCard";
 import TestimonialCard from "@/components/landing/TestimonialCard";
+import DoctorRecommendation from "@/components/landing/DoctorRecommendation";
+import TestimonialForm, { type TestimonialFormData } from "@/components/landing/TestimonialForm";
 
-// Mock Data
-const departments = [
+// Define types for shared data structures
+export interface Department {
+  name: string;
+  description: string;
+  Icon: LucideIcon;
+  imageSrc: string;
+  dataAiHint: string;
+}
+
+export interface Doctor {
+  name: string;
+  specialty: string;
+  bio: string;
+  imageSrc: string;
+  dataAiHint: string;
+}
+
+export interface Testimonial {
+  quote: string;
+  author: string;
+  role: string;
+  imageSrc: string;
+  dataAiHint: string;
+}
+
+
+// Initial Mock Data
+const initialDepartments: Department[] = [
   {
     name: "Cardiology",
     description: "Expert care for heart conditions, from prevention to advanced treatment options. Our cardiologists are leaders in their field.",
     Icon: Heart,
-    imageSrc: "https://placehold.co/600x338.png", // 16:9 aspect ratio
+    imageSrc: "https://placehold.co/600x338.png",
     dataAiHint: "heart health medical",
   },
   {
     name: "Gastroenterology",
     description: "Comprehensive diagnosis and treatment for digestive system disorders. We offer cutting-edge procedures and compassionate care.",
-    Icon: ClipboardList, // Using ClipboardList as a more specific icon for digestive health/records
+    Icon: ClipboardList,
     imageSrc: "https://placehold.co/600x338.png",
     dataAiHint: "digestive system medical",
   },
   {
     name: "General Medicine",
     description: "Primary care services for adults, focusing on overall health, prevention, and management of common illnesses.",
-    Icon: ShieldCheck,
+    Icon: ShieldCheck, // Changed to a more relevant icon
     imageSrc: "https://placehold.co/600x338.png",
     dataAiHint: "general practice doctor",
   },
 ];
 
-const doctors = [
+const initialDoctors: Doctor[] = [
   {
     name: "Dr. Emily Carter",
     specialty: "Cardiology",
@@ -57,7 +88,7 @@ const doctors = [
   },
 ];
 
-const testimonials = [
+const initialTestimonials: Testimonial[] = [
   {
     quote: "The telehealth consultation was incredibly convenient and the doctor was very attentive. I got the help I needed without leaving home!",
     author: "Alex P.",
@@ -83,6 +114,23 @@ const testimonials = [
 
 
 export default function HomePage() {
+  const [departments] = useState<Department[]>(initialDepartments);
+  const [doctors] = useState<Doctor[]>(initialDoctors);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(initialTestimonials);
+
+  const handleNewTestimonial = (data: TestimonialFormData) => {
+    const newTestimonial: Testimonial = {
+      quote: data.quote,
+      author: data.author,
+      role: data.role || "New User",
+      imageSrc: data.imageSrc || "https://placehold.co/100x100.png", // Default placeholder
+      dataAiHint: data.dataAiHint || "person avatar",
+    };
+    setTestimonials(prevTestimonials => [newTestimonial, ...prevTestimonials]);
+  };
+  
+  const availableSpecialties = initialDepartments.map(dept => dept.name);
+
   return (
     <div className="space-y-20"> {/* Increased spacing between sections */}
       <section className="text-center py-12 md:py-20">
@@ -123,7 +171,7 @@ export default function HomePage() {
         <h2 className="text-3xl md:text-4xl font-semibold text-center mb-12 text-primary">Our Core Features</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
           <FeatureCard
-            icon={<Users className="h-10 w-10 text-accent" />} // Changed to Lucide Users icon
+            icon={<Users className="h-10 w-10 text-accent" />}
             title="Patient Information"
             description="Easily capture and manage patient details securely for a personalized experience."
           />
@@ -140,12 +188,18 @@ export default function HomePage() {
           <FeatureCard
             icon={<MicVocal className="h-10 w-10 text-accent" />}
             title="Live Transcription"
-            description="AI-powered transcription to overcome language barriers and keep accurate records."
+            description="AI-powered transcription with summarization and follow-up suggestions."
           />
         </div>
       </section>
 
-      {/* New Departments Section */}
+      {/* AI Doctor Recommendation Section */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <DoctorRecommendation availableSpecialties={availableSpecialties} departments={departments} />
+        </div>
+      </section>
+
       <section className="py-16 bg-muted/30 rounded-xl">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-semibold text-center mb-12 text-primary">Our Medical Departments</h2>
@@ -164,7 +218,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* New Meet Our Doctors Section */}
       <section className="py-16">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-semibold text-center mb-12 text-primary">Meet Our Specialists</h2>
@@ -183,22 +236,32 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* New Patient Testimonials Section */}
       <section className="py-16 bg-muted/30 rounded-xl">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-semibold text-center mb-12 text-primary">What Our Patients Say</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <TestimonialCard
-                key={index}
-                quote={testimonial.quote}
-                author={testimonial.author}
-                role={testimonial.role}
-                imageSrc={testimonial.imageSrc}
-                dataAiHint={testimonial.dataAiHint}
-              />
-            ))}
-          </div>
+          {testimonials.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {testimonials.map((testimonial, index) => (
+                <TestimonialCard
+                  key={`${testimonial.author}-${index}`} // Ensure unique key
+                  quote={testimonial.quote}
+                  author={testimonial.author}
+                  role={testimonial.role}
+                  imageSrc={testimonial.imageSrc}
+                  dataAiHint={testimonial.dataAiHint}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-muted-foreground">No testimonials yet. Be the first to share your experience!</p>
+          )}
+        </div>
+      </section>
+      
+      {/* Testimonial Submission Section */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <TestimonialForm onSubmitTestimonial={handleNewTestimonial} />
         </div>
       </section>
 
@@ -244,7 +307,3 @@ function FeatureCard({ icon, title, description }: FeatureCardProps) {
     </Card>
   );
 }
-
-// The UsersIcon SVG is no longer needed here as we are using the Lucide Users icon for the FeatureCard.
-// If you had other custom SVGs, they would remain.
-

@@ -58,8 +58,15 @@ export default function LoginPage() {
 
   useEffect(() => {
     setIsClient(true);
-    if (localStorage.getItem(LOCAL_STORAGE_CURRENT_USER_KEY)) {
-      router.push("/"); // Already logged in
+    // Check if user is already logged in and if their role matches potential dashboard
+    const userStr = localStorage.getItem(LOCAL_STORAGE_CURRENT_USER_KEY);
+    if (userStr) {
+      const user: CurrentUser = JSON.parse(userStr);
+      if (user.role === 'doctor') {
+        router.push("/doctor/dashboard");
+      } else {
+        router.push("/"); 
+      }
     }
   }, [router]);
 
@@ -93,9 +100,15 @@ export default function LoginPage() {
         variant: "default",
         className: "bg-green-600 text-white dark:bg-green-700 dark:text-white",
       });
-      // Trigger a custom event to notify header or use router.refresh()
+      
       window.dispatchEvent(new Event('authChange'));
-      router.push("/"); // Redirect to homepage or dashboard based on role later
+
+      if (foundUser.role === 'doctor') {
+        router.push("/doctor/dashboard");
+      } else {
+        router.push("/"); 
+      }
+      // router.refresh(); // Force refresh to re-evaluate layout/header if needed
     } else {
       toast({
         title: "Login Failed",
@@ -107,8 +120,17 @@ export default function LoginPage() {
   }
 
   if (!isClient) {
-    return null; // Or a loading spinner
+    // Prevent rendering form until client-side check is complete to avoid flash of content
+    // Or a loading spinner
+    return <div className="flex justify-center items-center min-h-[calc(100vh-200px)]"><p>Loading...</p></div>;
   }
+  
+  // If user is already logged in (checked in useEffect), they will be redirected.
+  // This check prevents rendering the form if redirection is about to happen.
+  if (localStorage.getItem(LOCAL_STORAGE_CURRENT_USER_KEY)) {
+      return <div className="flex justify-center items-center min-h-[calc(100vh-200px)]"><p>Redirecting...</p></div>;
+  }
+
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)] py-12">

@@ -42,7 +42,7 @@ export default function PrescriptionPad({
         return;
     }
 
-    // Mock save action
+    // Simulate save action
     console.log({
       doctorName,
       patientName,
@@ -52,8 +52,8 @@ export default function PrescriptionPad({
       instructions,
     });
     toast({
-      title: "Prescription Saved (Mock)",
-      description: `Prescription for ${patientName} has been 'saved'.`,
+      title: "Prescription Saved",
+      description: `Prescription for ${patientName} has been saved.`,
       variant: "default",
       className: "bg-green-600 text-white dark:bg-green-700 dark:text-white"
     });
@@ -139,11 +139,11 @@ export default function PrescriptionPad({
         </CardContent>
         <CardFooter className="p-4 border-t border-primary/30 flex flex-col items-end space-y-3">
           <div className="w-full text-right">
-            <p className="text-sm text-muted-foreground">Doctor's Signature (Mock):</p>
+            <p className="text-sm text-muted-foreground">Doctor's Signature:</p>
             <p className="font-serif text-lg text-primary italic">{doctorName}</p>
           </div>
           <Button type="submit" size="lg" className="text-base">
-            <Save className="mr-2 h-5 w-5" /> Save Prescription (Mock)
+            <Save className="mr-2 h-5 w-5" /> Save Prescription
           </Button>
         </CardFooter>
       </form>

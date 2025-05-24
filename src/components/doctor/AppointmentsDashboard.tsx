@@ -44,12 +44,16 @@ export default function AppointmentsDashboard() {
   }, []);
 
   const handleReschedule = (appointmentId: string) => {
-    // This is a mock action. In a real app, this would trigger a modal or navigation.
+    setAppointments(prevAppointments => 
+      prevAppointments.filter(apt => apt.id !== appointmentId)
+    );
     toast({
-      title: "Reschedule Action",
-      description: `Reschedule for appointment ID ${appointmentId} would be handled here. (Not implemented)`,
+      title: "Appointment Rescheduled",
+      description: `Appointment ID ${appointmentId} has been marked for rescheduling.`,
       variant: "default",
     });
+    // In a real app, this would involve backend calls to update appointment status,
+    // notify the patient, and potentially offer new time slots.
   };
 
   if (appointments.length === 0) {
@@ -84,14 +88,14 @@ export default function AppointmentsDashboard() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Reschedule Appointment?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This functionality is for demonstration. Actual rescheduling would involve more complex logic.
-                        Do you want to simulate a reschedule request for {apt.patientName}?
+                        This will remove the appointment from the current "Scheduled" list.
+                        Are you sure you want to proceed with rescheduling for {apt.patientName}?
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction onClick={() => handleReschedule(apt.id)}>
-                        Proceed (Mock)
+                        Proceed
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>

@@ -54,21 +54,21 @@ const initialDepartments: Department[] = [
     name: "Cardiology",
     description: "Expert care for heart conditions, from prevention to advanced treatment options. Our cardiologists are leaders in their field.",
     Icon: Heart,
-    imageSrc: "https://placehold.co/600x338.png",
+    imageSrc: "https://source.unsplash.com/random/600x338/?heart+health+medical",
     dataAiHint: "heart health medical",
   },
   {
     name: "Gastroenterology",
     description: "Comprehensive diagnosis and treatment for digestive system disorders. We offer cutting-edge procedures and compassionate care.",
     Icon: ClipboardList,
-    imageSrc: "https://placehold.co/600x338.png",
+    imageSrc: "https://source.unsplash.com/random/600x338/?digestive+system+medical",
     dataAiHint: "digestive system medical",
   },
   {
     name: "General Medicine",
     description: "Primary care services for adults, focusing on overall health, prevention, and management of common illnesses.",
     Icon: ShieldCheck,
-    imageSrc: "https://placehold.co/600x338.png",
+    imageSrc: "https://source.unsplash.com/random/600x338/?general+practice+doctor",
     dataAiHint: "general practice doctor",
   },
 ];
@@ -76,57 +76,57 @@ const initialDepartments: Department[] = [
 const initialDoctors: Doctor[] = [
   {
     id: "doc1",
-    name: "Dr. Emily Carter",
+    name: "Dr. Priya Sharma",
     specialty: "Cardiology",
     qualification: "MD, FACC (Fellow of the American College of Cardiology)",
-    consultationCharge: 250,
+    consultationCharge: 2500, // Assuming INR
     reviews: { averageRating: 4.8, count: 150 },
-    bio: "Dr. Carter is a board-certified cardiologist with over 10 years of experience in treating complex heart conditions and promoting cardiovascular wellness.",
-    imageSrc: "https://placehold.co/200x200.png",
+    bio: "Dr. Sharma is a board-certified cardiologist with over 10 years of experience in treating complex heart conditions and promoting cardiovascular wellness.",
+    imageSrc: "https://source.unsplash.com/random/200x200/?female+doctor+portrait",
     dataAiHint: "female doctor portrait",
   },
   {
     id: "doc2",
-    name: "Dr. Johnathan Lee",
+    name: "Dr. Rohan Mehra",
     specialty: "Gastroenterology",
     qualification: "MD, AGAF (Fellow of the American Gastroenterological Association)",
-    consultationCharge: 220,
+    consultationCharge: 2200, // Assuming INR
     reviews: { averageRating: 4.7, count: 135 },
-    bio: "Dr. Lee specializes in digestive health, offering advanced diagnostics and treatments for a wide range of gastrointestinal issues.",
-    imageSrc: "https://placehold.co/200x200.png",
+    bio: "Dr. Mehra specializes in digestive health, offering advanced diagnostics and treatments for a wide range of gastrointestinal issues.",
+    imageSrc: "https://source.unsplash.com/random/200x200/?male+doctor+portrait",
     dataAiHint: "male doctor portrait",
   },
   {
     id: "doc3",
-    name: "Dr. Sarah Green",
+    name: "Dr. Ananya Reddy",
     specialty: "General Medicine",
     qualification: "MD, MPH (Master of Public Health)",
-    consultationCharge: 180,
+    consultationCharge: 1800, // Assuming INR
     reviews: { averageRating: 4.9, count: 210 },
-    bio: "Dr. Green provides comprehensive primary care, focusing on preventative health and patient education for long-term well-being.",
-    imageSrc: "https://placehold.co/200x200.png",
+    bio: "Dr. Reddy provides comprehensive primary care, focusing on preventative health and patient education for long-term well-being.",
+    imageSrc: "https://source.unsplash.com/random/200x200/?doctor+portrait+professional",
     dataAiHint: "doctor portrait professional",
   },
   {
     id: "doc4",
-    name: "Dr. Michael Brown",
+    name: "Dr. Vikram Singh",
     specialty: "Cardiology",
     qualification: "MBBS, MRCP (Member of the Royal College of Physicians)",
-    consultationCharge: 260,
+    consultationCharge: 2600, // Assuming INR
     reviews: { averageRating: 4.6, count: 95 },
-    bio: "Dr. Brown is known for his patient-centric approach and expertise in interventional cardiology.",
-    imageSrc: "https://placehold.co/200x200.png",
+    bio: "Dr. Singh is known for his patient-centric approach and expertise in interventional cardiology.",
+    imageSrc: "https://source.unsplash.com/random/200x200/?senior+male+doctor",
     dataAiHint: "senior male doctor",
   },
   {
     id: "doc5",
-    name: "Dr. Linda Smith",
+    name: "Dr. Sunita Patel",
     specialty: "Gastroenterology",
     qualification: "DO (Doctor of Osteopathic Medicine)",
-    consultationCharge: 230,
+    consultationCharge: 2300, // Assuming INR
     reviews: { averageRating: 4.5, count: 110 },
-    bio: "Dr. Smith is passionate about holistic digestive care and managing chronic conditions.",
-    imageSrc: "https://placehold.co/200x200.png",
+    bio: "Dr. Patel is passionate about holistic digestive care and managing chronic conditions.",
+    imageSrc: "https://source.unsplash.com/random/200x200/?female+doctor+smiling",
     dataAiHint: "female doctor smiling",
   },
 ];
@@ -134,23 +134,23 @@ const initialDoctors: Doctor[] = [
 const initialTestimonials: Testimonial[] = [
   {
     quote: "The telehealth consultation was incredibly convenient and the doctor was very attentive. I got the help I needed without leaving home!",
-    author: "Alex P.",
+    author: "Arjun Kumar",
     role: "Verified Patient",
-    imageSrc: "https://placehold.co/100x100.png",
+    imageSrc: "https://source.unsplash.com/random/100x100/?indian+person+smiling",
     dataAiHint: "person smiling happy",
   },
   {
     quote: "RemoteCare Connect made it so easy to manage my appointments and speak to a specialist. Highly recommend their services.",
-    author: "Maria G.",
+    author: "Meera Iyer",
     role: "Returning Patient",
-    imageSrc: "https://placehold.co/100x100.png",
+    imageSrc: "https://source.unsplash.com/random/100x100/?indian+professional+headshot",
     dataAiHint: "professional headshot",
   },
   {
     quote: "I was hesitant about online consultations, but the experience was seamless and professional. The AI transcription was a great bonus!",
-    author: "David K.",
+    author: "Deepak Chopra", // Using a well-known name for variety in example
     role: "First-time User",
-    imageSrc: "https://placehold.co/100x100.png",
+    imageSrc: "https://source.unsplash.com/random/100x100/?indian+person+technology",
     dataAiHint: "person technology",
   },
 ];
@@ -170,7 +170,7 @@ export default function HomePage() {
       quote: data.quote,
       author: data.author,
       role: data.role || "New User",
-      imageSrc: data.imageSrc || "https://placehold.co/100x100.png", // Default placeholder
+      imageSrc: data.imageSrc || `https://source.unsplash.com/random/100x100/?${data.dataAiHint || 'person+avatar'}`, 
       dataAiHint: data.dataAiHint || "person avatar",
     };
     setTestimonials(prevTestimonials => [newTestimonial, ...prevTestimonials]);
@@ -202,7 +202,7 @@ export default function HomePage() {
       <section className="grid md:grid-cols-2 gap-12 items-center">
         <div className="order-2 md:order-1">
           <Image
-            src="https://placehold.co/600x450.png"
+            src="https://source.unsplash.com/random/600x450/?telehealth+doctor+patient+laptop"
             alt="Telehealth consultation illustration"
             width={600}
             height={450}
@@ -370,3 +370,4 @@ function FeatureCard({ icon, title, description }: FeatureCardProps) {
   );
 }
 
+    

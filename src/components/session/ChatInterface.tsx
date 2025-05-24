@@ -112,7 +112,7 @@ export default function ChatInterface() {
               >
                 {msg.sender === "doctor" && (
                   <Avatar className="h-9 w-9 border-2 border-accent">
-                    <AvatarImage src="https://placehold.co/40x40.png?text=AI" data-ai-hint="robot doctor" />
+                    <AvatarImage src="https://source.unsplash.com/random/40x40/?robot+doctor" data-ai-hint="robot doctor" />
                     <AvatarFallback><Stethoscope size={18}/></AvatarFallback>
                   </Avatar>
                 )}
@@ -130,7 +130,7 @@ export default function ChatInterface() {
                 </div>
                 {msg.sender === "patient" && (
                   <Avatar className="h-9 w-9 border-2 border-primary">
-                     <AvatarImage src="https://placehold.co/40x40.png?text=Me" data-ai-hint="person portrait" />
+                     <AvatarImage src="https://source.unsplash.com/random/40x40/?person+portrait" data-ai-hint="person portrait" />
                     <AvatarFallback><UserCircle size={18}/></AvatarFallback>
                   </Avatar>
                 )}
@@ -156,3 +156,5 @@ export default function ChatInterface() {
     </Card>
   );
 }
+
+    

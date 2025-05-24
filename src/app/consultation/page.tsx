@@ -107,7 +107,7 @@ export default function ConsultationPage() {
                   <FormItem>
                     <FormLabel className="flex items-center gap-2 text-base"><UserCircle className="h-5 w-5 text-accent"/>Full Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Johnathan Doe" {...field} className="text-base"/>
+                      <Input placeholder="e.g., Rohan Sharma" {...field} className="text-base"/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -163,7 +163,7 @@ export default function ConsultationPage() {
                   <FormItem>
                     <FormLabel className="flex items-center gap-2 text-base"><Mail className="h-5 w-5 text-accent"/>Email Address</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="e.g., john.doe@example.com" {...field} className="text-base"/>
+                      <Input type="email" placeholder="e.g., rohan.sharma@example.com" {...field} className="text-base"/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -177,7 +177,7 @@ export default function ConsultationPage() {
                   <FormItem>
                     <FormLabel className="flex items-center gap-2 text-base"><Phone className="h-5 w-5 text-accent"/>Phone Number</FormLabel>
                     <FormControl>
-                      <Input type="tel" placeholder="e.g., (123) 456-7890" {...field} className="text-base"/>
+                      <Input type="tel" placeholder="e.g., 98XXXXXX00" {...field} className="text-base"/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -240,3 +240,5 @@ export default function ConsultationPage() {
     </div>
   );
 }
+
+    

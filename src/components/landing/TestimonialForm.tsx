@@ -44,8 +44,8 @@ export default function TestimonialForm({ onSubmitTestimonial }: TestimonialForm
     const newTestimonial: TestimonialFormData = {
       ...data,
       role: "Verified User", // Default role
-      imageSrc: `https://placehold.co/100x100.png`, // Default placeholder
-      dataAiHint: "person smiling",
+      imageSrc: `https://source.unsplash.com/random/100x100/?${encodeURIComponent(data.dataAiHint || 'person+smiling')}`, // Default placeholder
+      dataAiHint: data.dataAiHint || "person smiling",
     };
     onSubmitTestimonial(newTestimonial);
     toast({
@@ -77,7 +77,7 @@ export default function TestimonialForm({ onSubmitTestimonial }: TestimonialForm
                 <FormItem>
                   <FormLabel className="flex items-center gap-2 text-base"><User className="h-5 w-5 text-accent"/>Your Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Jane Doe" {...field} className="text-base"/>
+                    <Input placeholder="e.g., Priya Sharma" {...field} className="text-base"/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -115,3 +115,5 @@ export default function TestimonialForm({ onSubmitTestimonial }: TestimonialForm
     </Card>
   );
 }
+
+    

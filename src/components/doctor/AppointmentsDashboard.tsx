@@ -27,11 +27,11 @@ interface Appointment {
 }
 
 const mockAppointments: Appointment[] = [
-  { id: "apt1", patientName: "Alice Wonderland", date: "2024-08-15", time: "10:00 AM", status: "Scheduled" },
-  { id: "apt2", patientName: "Bob The Builder", date: "2024-08-15", time: "11:30 AM", status: "Scheduled" },
-  { id: "apt3", patientName: "Charlie Brown", date: "2024-08-16", time: "02:00 PM", status: "Scheduled" },
-  { id: "apt4", patientName: "Diana Prince", date: "2024-08-16", time: "03:30 PM", status: "Completed" },
-  { id: "apt5", patientName: "Edward Scissorhands", date: "2024-08-17", time: "09:00 AM", status: "Cancelled" },
+  { id: "apt1", patientName: "Aisha Khan", date: "2024-08-15", time: "10:00 AM", status: "Scheduled" },
+  { id: "apt2", patientName: "Mohan Kumar", date: "2024-08-15", time: "11:30 AM", status: "Scheduled" },
+  { id: "apt3", patientName: "Priya Singh", date: "2024-08-16", time: "02:00 PM", status: "Scheduled" },
+  { id: "apt4", patientName: "Rohan Patel", date: "2024-08-16", time: "03:30 PM", status: "Completed" },
+  { id: "apt5", patientName: "Sanjana Gupta", date: "2024-08-17", time: "09:00 AM", status: "Cancelled" },
 ];
 
 export default function AppointmentsDashboard() {
@@ -108,3 +108,5 @@ export default function AppointmentsDashboard() {
     </div>
   );
 }
+
+    

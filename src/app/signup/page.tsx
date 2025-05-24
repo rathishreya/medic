@@ -105,11 +105,17 @@ export default function SignUpPage() {
       return;
     }
 
+    // Store user details for later
+    setUserDetails(data);
+    
+    // Reset the OTP form to ensure it's clean *before* switching UI
+    otpForm.reset({ otp: "" }); 
+
+    setUiStep("otp"); // Switch to OTP entry step
+
     // Simulate OTP generation and sending
     const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
     setMockOtp(generatedOtp);
-    setUserDetails(data);
-    setUiStep("otp");
 
     // In a real app, you'd send an SMS here. For demo, we'll alert it.
     alert(`Mock OTP Sent (for demo): ${generatedOtp}\nPlease enter this OTP to complete sign-up.`);
@@ -154,11 +160,15 @@ export default function SignUpPage() {
 
   const handleResendOtp = () => {
     if (!mockOtp) return;
-    alert(`Mock OTP Resent (for demo): ${mockOtp}\nPlease enter this OTP to complete sign-up.`);
+    // Re-generate OTP or use the same one for simulation
+    const newGeneratedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    setMockOtp(newGeneratedOtp);
+    alert(`Mock OTP Resent (for demo): ${newGeneratedOtp}\nPlease enter this OTP to complete sign-up.`);
     toast({
       title: "OTP Resent (Simulated)",
-      description: `Enter the OTP: ${mockOtp} (shown in alert).`,
+      description: `Enter the OTP: ${newGeneratedOtp} (shown in alert).`,
     });
+    otpForm.reset({ otp: "" }); // Clear the OTP field on resend
   };
 
   if (!isClient) {
@@ -271,7 +281,15 @@ export default function SignUpPage() {
                     <FormItem>
                       <FormLabel className="flex items-center gap-2 text-base"><KeyRound className="h-5 w-5 text-accent"/>Enter 6-Digit OTP</FormLabel>
                       <FormControl>
-                        <Input type="text" placeholder="123456" {...field} className="text-base" maxLength={6}/>
+                        <Input 
+                          type="text" // Using text to allow any character, though number or tel could also be used
+                          placeholder="123456" 
+                          {...field} 
+                          className="text-base" 
+                          maxLength={6}
+                          autoComplete="one-time-code" // Helps browsers suggest OTPs
+                          inputMode="numeric" // Suggests numeric keyboard on mobile
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -304,5 +322,4 @@ export default function SignUpPage() {
     </div>
   );
 }
-
     

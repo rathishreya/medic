@@ -1,8 +1,7 @@
-
 import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { User } from 'lucide-react'; // Generic user icon for fallback
+import { User } from 'lucide-react'; 
 
 interface TestimonialCardProps {
   quote: string;
@@ -22,7 +21,7 @@ export default function TestimonialCard({ quote, author, role, imageSrc, dataAiH
           <span className="absolute -bottom-4 -right-1 text-5xl text-primary/50 opacity-75">&rdquo;</span>
         </blockquote>
       </CardHeader>
-      <CardContent className="flex-grow" /> {/* Spacer if needed */}
+      <CardContent className="flex-grow" /> 
       <CardFooter className="mt-auto pt-4 border-t border-border/50">
         <div className="flex items-center gap-3">
           {imageSrc && (
@@ -42,3 +41,5 @@ export default function TestimonialCard({ quote, author, role, imageSrc, dataAiH
     </Card>
   );
 }
+
+

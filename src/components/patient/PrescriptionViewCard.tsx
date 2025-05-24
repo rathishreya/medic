@@ -2,8 +2,8 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { StoredPrescription } from "@/components/doctor/PrescriptionPad";
-import { CalendarDays, Pill, FileSignature, FileText, Hospital, UserMd } from "lucide-react";
+import type { StoredPrescription } from "@/components/doctor/PrescriptionPad";
+import { CalendarDays, Pill, FileSignature, FileText, Hospital, User } from "lucide-react"; // Changed UserMd to User
 import { format, parseISO } from "date-fns";
 
 interface PrescriptionViewCardProps {
@@ -24,7 +24,7 @@ export default function PrescriptionViewCard({ prescription }: PrescriptionViewC
             </CardDescription>
           </div>
           <div className="text-sm text-muted-foreground text-left sm:text-right">
-            <p className="font-medium flex items-center gap-1"><UserMd className="h-4 w-4 text-accent"/>Dr. {prescription.doctorName}</p>
+            <p className="font-medium flex items-center gap-1"><User className="h-4 w-4 text-accent"/>Dr. {prescription.doctorName}</p> {/* Changed UserMd to User */}
             <p className="flex items-center gap-1"><Hospital className="h-4 w-4 text-accent"/>{prescription.clinicName}</p>
           </div>
         </div>
@@ -66,3 +66,4 @@ export default function PrescriptionViewCard({ prescription }: PrescriptionViewC
 const Label = ({ children, className }: { children: React.ReactNode, className?: string }) => (
   <span className={`block font-medium ${className || ''}`}>{children}</span>
 );
+

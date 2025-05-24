@@ -2,12 +2,13 @@
 import type { LucideIcon } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import type { StaticImageData } from "next/image";
 
 interface DepartmentCardProps {
   name: string;
   description: string;
   Icon?: LucideIcon;
-  imageSrc?: string;
+  imageSrc?: string | StaticImageData;
   imageAlt?: string;
   dataAiHint?: string;
 }

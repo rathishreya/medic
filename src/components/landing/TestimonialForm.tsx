@@ -50,7 +50,7 @@ export default function TestimonialForm({ onSubmitTestimonial }: TestimonialForm
     toast({
       title: "Testimonial Submitted!",
       description: "Thank you for your feedback.",
-      variant: "success",
+      variant: "default",
     });
     form.reset();
   };

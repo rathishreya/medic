@@ -3,11 +3,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { StoredPrescription } from '@/components/doctor/PrescriptionPad'; // Assuming this is exported
+import { StoredPrescription } from '@/components/doctor/PrescriptionPad'; 
 import PrescriptionViewCard from '@/components/patient/PrescriptionViewCard';
-import { FileText, UserCircle } from 'lucide-react';
+import { FileText, UserCircle, PlusCircle } from 'lucide-react';
 
 const LOCAL_STORAGE_CURRENT_USER_KEY = "telehealthAppCurrentUser";
 const LOCAL_STORAGE_PRESCRIPTIONS_KEY_PREFIX = "telehealthAppPrescriptions_";
@@ -69,6 +71,14 @@ export default function PatientDashboardPage() {
             Welcome, {patientName}! View your health information and prescriptions.
           </CardDescription>
         </CardHeader>
+        <CardContent>
+          <Button size="lg" asChild className="text-lg">
+            <Link href="/consultation">
+              <PlusCircle className="mr-2 h-5 w-5" />
+              Start New Consultation
+            </Link>
+          </Button>
+        </CardContent>
       </Card>
 
       <Card className="shadow-lg border-border">

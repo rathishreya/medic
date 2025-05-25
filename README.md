@@ -2,6 +2,11 @@
 
 A modern web application for managing patient information, real-time chat, and secure health data access. Built using **Next.js** with **TypeScript**, styled with **Tailwind CSS**, and structured for scalability.
 
+Check out the live version of the app here:
+👉 medic-delta.vercel.app
+
+
+
 ---
 
 ## 🚀 Features
